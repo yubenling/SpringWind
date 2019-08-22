@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.CustomMapper">
+
+	<!-- 通用查询结果列-->
+	<sql id="Base_Column_List">
+		  id,customerName,qqAcount,phone,description,isBuy,createTime,expireTime,
+		  updateTime,opeater,ownGroup,delayCount,owner,beforeOwner,ownGroup,isOperate,restSmsNum,loginCount
+		  ,	lastLoginDate,notRegister,level
+	</sql>
+	
+	
+	
+	<update id="batchUpdateCusomer"  parameterType="java.util.List">
+	 
+	      <foreach collection="list" item="item" index="index" open="begin" close="end" separator="">
+				update crm_customer 
+				<set>
+				  loginCount=#{item.loginCount},
+				  restSmsNum=#{item.restSmsNum}
+				</set>
+				where customerName = #{item.customerName,jdbcType=VARCHAR}
+		 </foreach>
+		 
+    </update>
+    
+    <update id="updateByUserId" >
+    	update oa.crm_customer 
+    	<set>
+    		restSmsNum = #{restSmsNum}
+    	</set>
+    	<where>
+	    	 customerName = #{customerName}
+    	</where>
+    </update>
+	
+	<delete id="updateTodayLoginCount">
+		UPDATE oa.crm_customer SET todayLoginCount = NULL WHERE todayLoginCount IS NOT NULL
+	</delete>
+	
+	<update id="batchChangeTheOwnerOperate">
+			UPDATE crm_customer set owner = #{enterId} WHERE owner = #{outId};
+	</update>
+</mapper>

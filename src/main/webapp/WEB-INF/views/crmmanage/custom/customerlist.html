@@ -1,0 +1,425 @@
+#override("title")
+SpringWind - 客户管理
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+<link href="#springUrl('/static/css/blue/style.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>客户列表</a></li><li class="active"><strong>客户管理</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<span class="input-group-btn">				 
+			     <input type="text" class="form-control" placeholder="请输入所属人名称" id="ownerName" value="">      
+			     <input type="text" class="form-control" placeholder="请输入客户昵称" id="customerName" value="">      
+			     <input type="text" class="form-control" placeholder="请输入qq号" id="qqAcount" value="">      
+			     <input type="text" class="form-control" placeholder="请输入手机号" id="phone" value="">  
+			      <input type="text" class="form-control" placeholder="到期开始时间" id="startExpireTime" ></input>
+			      <input type="text" class="form-control" placeholder="到期结束时间" id="endExpireTime" ></input>
+			      <select class="form-control m-b" id="isOperate" name="isOperate">
+				    <option   value="" selected="selected">请选择</option>
+                    <option   value="0">未操作</option>
+                    <option   value="1">已操作</option>
+                 </select>
+                 <select class="form-control m-b" id="sortName" name="sortName">
+				    <option   value="" selected="selected">排序选择</option>
+                    <option   value="0">登录时间</option>
+                    <option   value="1">短信余量</option>
+                 </select>
+				<button type="button" class="btn btn-info" onclick="doSearch()">搜索</button>
+				<button type="button" class="btn btn-danger" onclick="batchChangeTheOwner()">批量更改所属人</button>
+			</span>
+		</div>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable" ></table>
+    </div>
+</div>
+
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script src="#springUrl('/static/js/plugins/datepicker/bootstrap-datepicker.js')"></script>
+<script type="text/javascript">
+
+	
+	
+
+
+var dataUrl = "#springUrl('/sys/manager/searchAllCustomlist.html')";
+		var dataColumns = [
+         {
+            field: 'Number',
+            title: '序号',
+            formatter: function (value, row, index) {
+                return index+1;
+            }
+         }, {
+		    field: 'customerName',
+		    title: '客户昵称'
+		}, {
+		    field: 'qqAcount',
+		    title: 'qq'
+		}, {
+		    field: 'level',
+		    title: '等级',
+		    formatter: function (value, row, index) {
+		    	if(row.level !=null && row.level<21){
+					return "<img src='#springUrl('/static/levelImages/"+row.level+".gif')'>"
+		    	}
+		    }
+		}, {
+		    field: 'phone',
+		    title: '手机号'
+		}, {
+		    field: 'description',
+		    title: '备注'
+		},{
+		    field: 'delayCount',
+		    title: '延期次数'
+		},{
+		    field: 'createTime',
+		    title: '创建时间',
+		    formatter: function (value, row, index) {
+		        return formatDate(row.createTime);
+		    }
+		}, {
+		    field: 'expireTime',
+		    title: '到期时间',
+		    formatter: function (value, row, index) {
+		        return formatDate(row.expireTime);
+		    }
+		}, {
+		    field: 'lastLoginDate',
+		    title: '最后登录时间',
+		    formatter: function (value, row, index) {
+		        return formatDate(row.lastLoginDate);
+		    }
+		}, {
+		    field: 'owner',
+		    title: '客户归属' 
+		},  {
+		    field: 'restSmsNum',
+		    title: '短信剩余量'
+		},{
+		    field: 'loginCount',
+		    title: '历史登录'
+		},{
+		    field: 'todayLoginCount',
+		    title: '当日登录'
+		},  {
+		    field: 'notRegister',
+		    title: '未注册用户',
+		    formatter: function (value, row, index) {
+		    	var data;
+		    	if(row.notRegister == 0){
+		    		data = "是"
+		    	}
+		    	if(row.notRegister == 1){
+		    		data = "否"
+		    	}
+		        return data;
+		    }
+		}, {
+		    title: '操作',
+		    formatter: function (value, row, index) {
+		    	var id = row.id;
+		    	var count = row.delayCount;
+		    	var operatStaus = row.isOperate;
+		    	var isOperate = row.isOperate;
+		    	var customerName = row.customerName;
+		    	var restSmsNum = row.restSmsNum;
+		     	if(restSmsNum==null){
+		       		restSmsNum=0;
+		       	}
+		    	var a =  "";
+		    	if(isOperate==1){
+		    	  a  =  ' <a class="btn btn-xs  btn-success" onclick="changeReord(' + "'" + id + "'" + ',' + "'" + operatStaus + "'" + ')"><i class="fa"></i>已操作</a>';
+		    	}else if(isOperate==2){
+		          a =  ' <a class="btn btn-xs  btn-warning" onclick="changeReord(' + "'" + id + "'" + ',' + "'" + operatStaus + "'" + ')"><i class="fa"></i>已操作</a>';
+		    	}else{
+		    	  a =  ' <a class="btn btn-xs  btn-success" onclick="changeReord(' + "'" + id + "'" + ',' + "'" + operatStaus + "'" + ')"><i class="fa"></i>未操作</a>';
+		    	} 
+		        return ' <a class="btn btn-xs btn-primary" style="margin:3px" onclick="operateCustom(' + "'" + id + "'" + ',' + "'" + 1 + "'" + ')"><i class="fa"></i>购买</a>'+
+		        ' <a class="btn btn-xs btn-success" onclick="operateCustom(' + "'" + id + "'" + ',' + "'" + 2 + "'" + ')"><i class="fa"></i>充值</a>'+
+		        ' <a class="btn btn-xs btn-success" onclick="operateTrueCustom(' + "'" + id + "'" + ',' + "'" + customerName + "'"+ ',' + "'" + restSmsNum + "'"+ ')"><i class="fa"></i>补短信</a>'+
+		        ' <a class="btn btn-xs btn-success" onclick="smsTransfer(' + "'" + id + "'" + ',' + "'" + customerName + "'"+ ',' + "'" + restSmsNum + "'"+ ')"><i class="fa"></i>转短信</a>'+
+		        ' <a class="btn btn-xs btn-success" onclick="operateCustom(' + "'" + id + "'" + ',' + "'" + 3 + "'" + ')"><i class="fa"></i>赠送</a>'+
+		        ' <a class="btn btn-xs  btn-danger" onclick="delayCustomer(' + "'" + id + "'" + ',' + "'" + count + "'" + ')"><i class="fa"></i>延期</a>' +
+		        ' <a class="btn btn-xs  btn-warning" onclick="viewPayRecord(' + "'" + id + "'"+ ')"><i class="fa"></i>充值记录</a>' +
+		        ' <a class="btn btn-xs  btn-primary" onclick="changeTheOwner(' + "'" + id + "'"+ ')"><i class="fa"></i>更改所属人</a>' +a+
+		        ' <a class="btn btn-xs btn-info" onclick="updateCustomsId(' + "'" + id + "'" + ')"><i class="fa"></i>更新</a>';
+		    }
+		}
+	];
+		
+		
+		//批量更新客户数据
+		var hold = true;
+		 function updateCustomsId(id) {
+			 layer.msg('正在更新，请勿重复点击！！！');
+			 var custIds = new Array();
+			 custIds[0] = id;
+			 if(hold){
+				 hold = false;
+				 $.ajax({
+				    	url: "#springUrl('/sys/manager/updateCustomsId')",
+				        data: {"custIds":custIds.join()},
+				        type: "POST",
+				        success: function(data){
+				        	hold = true;
+				        	var d = JSON.parse(data);
+				            if(d.data){
+		                 		doCurrentSearch();
+				            }
+				            layer.closeAll();
+				        }
+				    });
+			 }else{
+				 layer.msg('请勿重复点击！！！');
+			 }
+	    }	
+		
+	 //批量更改所属人
+	 function batchChangeTheOwner() {
+	    	var title = "操作";
+	       	var url = "#springUrl('/sys/manager/batchChangeTheOwner.html')";
+       		title = "批量更改所属人";
+       		url = url ;
+	        layer.open({
+	        	id:"aaaa",
+	            type: 2,
+	            title: title,
+	            shadeClose: true,
+	            shade: 0.8,
+	            area: ['600px', '530px'],
+	            fix: false,
+	            maxmin: true,
+	            content: url
+	        });
+	    }	
+		
+		
+		
+	//转短信操作
+	//充值操作
+    function smsTransfer(id,customerName,restSmsNum) {
+    	var title = "操作";
+       	var url = "#springUrl('/sys/manager/smsTransfer.html')";
+       	if(id!=null){
+       		title = "客户管理";
+       		url = url + "?id=" + id+"&customerName="+customerName+"&restSmsNum="+restSmsNum;
+       	}
+        layer.open({
+            type: 2,
+            customerName: customerName,
+            restSmsNum: restSmsNum,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['600px', '530px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+
+    function dataQueryParams(params) {
+    	return {
+    			_size: params.limit,
+    			_index: params.offset,
+    			owner:$("#ownerName").val(),
+    			customerName:$("#customerName").val(),
+    			qqAcount: $("#qqAcount").val(),
+    			phone: $("#phone").val(),
+    			startExpireTime: $("#startExpireTime").val(),
+    			endExpireTime: $("#endExpireTime").val(),
+    			isOperate :$("#isOperate").val(),
+    			sortName:$("#sortName").val()
+    	};
+    }
+    function delayCustomer(cid,count) {
+        //询问框
+        layer.confirm('确定延期吗？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            $.ajax({
+                type: "POST",
+                url: "#springUrl('/sys/manager/delayCustomerByAdmin/')" + cid,
+                datatype: "text",
+                success: function (data) {
+                    if(data == 'true'){
+                    	$('#dataTable').bootstrapTable('refresh',{
+                      	  url:dataUrl,
+                      	  queryParams:dataQueryParams
+                        });
+                    }
+                    layer.closeAll();
+                }
+            });
+            
+        }, function () {
+            return;
+        });
+    }
+    
+    function operateCustom(id,type) {
+    	var title = "操作";
+       	var url = "#springUrl('/sys/manager/customerPayedit.html')";
+       	if(id!=null){
+       		title = "客户管理";
+       		url = url + "?id=" + id+"&type="+type;
+       	}
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['600px', '530px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+    
+    //充值操作
+    function operateTrueCustom(id,customerName,restSmsNum) {
+    	var title = "操作";
+       	var url = "#springUrl('/sys/manager/customerTruePayedit.html')";
+       	if(id!=null){
+       		title = "客户管理";
+       		url = url + "?id=" + id+"&customerName="+customerName+"&restSmsNum="+restSmsNum;
+       	}
+        layer.open({
+            type: 2,
+            customerName: customerName,
+            restSmsNum: restSmsNum,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['600px', '530px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+    
+    function changeTheOwner(id) {
+    	var title = "操作";
+       	var url = "#springUrl('/sys/manager/changeTheOwner.html')";
+       	if(id!=null){
+       		title = "客户管理";
+       		url = url + "?id=" + id ;
+       	}
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['600px', '530px'],
+            fix: false,
+            maxmin: true,
+            content: url
+        });
+    }
+    function changeReord(id,status) {
+    	if(status==0){
+    	//询问框
+	        layer.confirm('确定更改为已操作吗？', {
+	            btn: ['确定', '取消'] //按钮
+	        }, function () {
+	            $.ajax({
+	                type: "POST",
+	                url: "#springUrl('/sys/manager/updateOperateStatus')?id=" +id+"&status="+status,
+	                datatype: "text",
+	                success: function (data) {
+	                    if(data == 'true'){
+	                        $('#dataTable').bootstrapTable('refresh',{url:dataUrl});
+	                    }
+	                    layer.closeAll();
+	                }
+	            });
+	        }, function () {
+	            return;
+	        });
+    	}
+    }
+    
+    function viewPayRecord(id,type) {
+    	var title = "操作";
+       	var url = "#springUrl('/sys/manager/payRecordView.html')";
+       	if(id!=null){
+       		title = "充值记录";
+       		url = url + "?id=" + id ;
+       	}
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['800px', '600px'],
+            fix: false,
+            content: url
+        });
+    }
+    
+     function doSearch(params){
+       $('#dataTable').bootstrapTable('refresh',{
+     	  url:dataUrl,
+     	  queryParams:dataQueryParams
+      });
+     }
+
+	
+	$("#startExpireTime").datepicker({
+        format: 'yyyy-mm-dd',
+        language: 'en',
+        pickDate: true,
+        pickTime: true,
+    	language: 'cn',
+        hourStep: 1,
+        minuteStep: 15,
+        secondStep: 30,
+        inputMask: true
+      });
+	$("#endExpireTime").datepicker({
+        format: 'yyyy-mm-dd',
+        language: 'en',
+        pickDate: true,
+        pickTime: true,
+        language: 'cn',
+        hourStep: 1,
+        minuteStep: 15,
+        secondStep: 30,
+        inputMask: true
+      });
+    
+
+	
+// 	$(function(){
+// 		$(".sortable").append("<img src='/static/css/blue/bg.gif' />");
+// 		$(document).on("click","img",function(){
+// 	    	if($(this).attr("src")=="/static/css/blue/bg.gif"){
+// 	    		$(this).attr("src","/static/css/blue/asc.gif");
+// 	    	}else{
+// 	    		$(this).attr("src","/static/css/blue/desc.gif");
+// 	    	};
+// 		});
+	
+// 	});
+
+	
+	
+</script>
+#end
+#extends("/common/framework.html")

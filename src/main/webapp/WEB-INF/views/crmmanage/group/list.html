@@ -1,0 +1,86 @@
+#override("title")
+crm - 群组管理
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>群组限管理</a></li><li class="active"><strong>新建群组</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+<!-- 		<div class="input-group"> -->
+<!-- 			<input type="text" class="form-control"> -->
+<!-- 			<span class="input-group-btn"> -->
+<!-- 				<button type="button" class="btn btn-info">搜索</button> -->
+<!-- 			</span> -->
+<!-- 		</div> -->
+		<button class="btn btn-primary" onclick="editGroup(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加群组</button>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+var dataUrl="#springUrl('/group/manage/getGroupList.html')";
+var dataColumns = [
+{
+    field: 'Number',
+    title: '序号',
+    formatter: function (value, row, index) {
+        return index+1;
+    }
+ }, {
+    field: 'groupName',
+    title: '群组名称'
+}, {
+    field: 'groupDescribe',
+    title: '群组描述'
+}, {
+    title: '操作',
+    formatter: function (value, row, index) {
+        var id = row.id;
+        return '<a class="btn btn-xs btn-warning" onclick="editGroup(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>编辑</a> '
+    }
+}];
+function dataQueryParams(params) {
+	return {
+		_size: params.limit,  //页面大小
+		_index: params.offset, //页码
+	};
+}
+ 
+function editGroup(id) {
+   	var title = "新增群组";
+   	var url = "#springUrl('/group/manage/edit.html')";
+   	if(id!=null){
+   		title = "编辑群组";
+   		url = url + "?id=" + id;
+   	}
+    layer.open({
+        type: 2,
+        title: title,
+        shadeClose: true,
+        shade: 0.8,
+        area: ['550px', '430px'],
+        fix: false,
+        maxmin: true,
+        content: url
+    });
+}
+ 
+</script>
+#end
+#extends("/common/framework.html")

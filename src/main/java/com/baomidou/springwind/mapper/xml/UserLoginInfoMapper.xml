@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper    
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.UserLoginInfoMapper">
+	
+	<resultMap type="com.baomidou.springwind.entity.UserLoginInfo" id="userLoginInfo">
+		<result column="sellerNick" property="sellerNick" />
+		<result column="loginTime" property="loginTime" />
+		<result column="IpAddress" property="IpAddress" />
+	</resultMap>
+	
+	<select id="findUserLoginInfoList" resultMap="userLoginInfo" parameterType="userLoginInfo">
+		 <![CDATA[
+		   SELECT sellerNick,count(1) as IpAddress   FROM `crm_userlogininfo` where   1=1 and sellerNick is not null  
+		   and loginTime >= #{startTime}  and  loginTime <=  #{endTime}
+	       GROUP BY  sellerNick
+		 ]]>
+	</select>
+
+</mapper>

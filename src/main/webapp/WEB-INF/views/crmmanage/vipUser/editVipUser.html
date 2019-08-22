@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<link href="#springUrl('/static/css/bootstrap.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/style.css')" rel="stylesheet">
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 430px;">
+   <form id="myForm" class="form-horizontal" autocomplete="off" data-validator-option="{theme:'default'}">
+   <input type="hidden" value="${currentUser.loginName}" name="loginName" ></input>
+       <div class="form-group"><label class="col-sm-2 control-label">客户名称</label>
+      		<div class="col-sm-10">
+			<input type="text" class="form-control" name="vipUserNick" placeholder="请输入客户名称" data-rule="客户:required;vipUserNick">
+      		</div>
+       </div>
+       <div class="hr-line-dashed"></div>
+        <div class="form-group">
+            <div class="text-center">
+                <button class="btn btn-primary" type="submit">提 交</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+<script src="#springUrl('/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script type="text/javascript">
+$("#myForm").validator({
+    valid: function(form){
+        var me = this;
+        // 提交表单之前，hold住表单，防止重复提交
+        me.holdSubmit();
+        $.ajax({
+        	url: "#springUrl('/sys/manager/insertVipUser')",
+            data: $(form).serialize(),
+            type: "POST",
+            success: function(data){
+                if(data == '1'){
+                	window.parent.location.reload();
+                } else if (data == '2'){
+                	layer.alert("客户已存在！");
+                	//失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                    me.holdSubmit(false);
+                } else if (data == '3'){
+                	layer.alert("客户不存在！");
+                	//失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                    me.holdSubmit(false);
+                }  else {
+                	layer.alert("操作失败！");
+                	//失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                    me.holdSubmit(false);
+                }
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

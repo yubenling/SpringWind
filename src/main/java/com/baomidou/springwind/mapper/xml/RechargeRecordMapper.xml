@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.RechargeRecordMapper">
+
+<!-- 通用查询结果列-->
+	<sql id="Base_Column_List">
+		 id,loginName,createTime,deductUserName,rechargeUserName,rechargeNum,rechargeAgoSmsNum,rechargeLaterSmsNum,deductAgoSmsNum,deductLaterSmsNum,type
+	</sql>
+	
+	
+	<select id="findUserPresentNum" resultType="java.lang.Integer">
+		SELECT IFNULL( SUM(rechargeNum),0)
+		FROM crm_recharge_record
+		WHERE TYPE = '0' 
+		AND rechargeUserName = #{userNick} 
+		AND CONCAT(YEAR(createTime),'-',MONTH(createTime)) = #{rechargeDate}
+	</select>
+
+	<select id="findUserShiftToNum" resultType="java.lang.Integer">
+		SELECT IFNULL( SUM(rechargeNum),0)
+		FROM crm_recharge_record
+		WHERE TYPE = '1' 
+		AND rechargeUserName = #{userNick} 
+		AND CONCAT(YEAR(createTime),'-',MONTH(createTime)) = #{rechargeDate}
+	</select>
+
+	<select id="findUserDeductNum" resultType="java.lang.Integer">
+		SELECT IFNULL( SUM(rechargeNum),0)
+		FROM crm_recharge_record
+		WHERE TYPE = '1' 
+		AND deductUserName = #{userNick} 
+		AND CONCAT(YEAR(createTime),'-',MONTH(createTime)) = #{rechargeDate}
+	</select>
+</mapper>

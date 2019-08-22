@@ -1,0 +1,105 @@
+#override("title")
+SpringWind - 客户管理
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>客户列表</a></li><li class="active"><strong>客户管理</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<span class="input-group-btn">
+			     <input type="text" class="form-control" placeholder="转出客户昵称" id="deductUserName" value=""> 
+			     <input type="text" class="form-control" placeholder="补充客户昵称" id="rechargeUserName" value="">     
+				<button type="button" class="btn btn-info" onclick="doSearch()">搜索</button>
+			</span>
+		</div>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+var dataUrl = "#springUrl('/sys/manager/queryUserSupplementSms.html')";
+	var dataColumns = [{
+           field: 'Number',
+           title: '序号',
+           formatter: function (value, row, index) {
+               return index+1;
+           }
+        }, {
+	    	field: 'createTime',
+	    	title: '时间',
+	    	formatter: function (value, row, index) {
+		        return formatDate(row.createTime);
+		    }
+		}, {
+	    	field: 'loginName',
+	    	title: '操作人'
+		}, {
+	    	field: 'type',
+	    	title: '类型',
+	    	formatter: function (value, row, index) {
+	    		if(row.type !=null && row.type==0){
+					return "补充";
+	    		}
+	    		if(row.type !=null && row.type==1){
+		    		return "转出"; 
+	    		}
+	           }
+		}, {
+	    	field: 'rechargeNum',
+	    	title: '补（转）短信数量'
+		}, {
+	    	field: 'rechargeUserName',
+	    	title: '补充客户'
+		}, {
+	    	field: 'rechargeAgoSmsNum',
+	    	title: '补充前'
+		}, {
+	    	field: 'rechargeLaterSmsNum',
+	    	title: '补充后'
+		}, {
+	    	field: 'deductUserName',
+	    	title: '转出客户'
+		}, {
+	    	field: 'deductAgoSmsNum',
+	    	title: '转出前'
+		}, {
+	    	field: 'deductLaterSmsNum',
+	    	title: '转出后'
+		}
+		
+	];
+		
+    function dataQueryParams(params) {
+    	return {
+    			_size: params.limit,
+    			_index: params.offset,
+    			deductUserName:$("#deductUserName").val(),
+    			rechargeUserName:$("#rechargeUserName").val()
+    	};
+    }
+    function doSearch(params){
+      $('#dataTable').bootstrapTable('refresh',{
+    	  url:dataUrl,
+    	  queryParams:dataQueryParams
+      });
+    }
+</script>
+#end
+#extends("/common/framework.html")

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.UserInfoMapper">
+	<resultMap type="com.baomidou.springwind.entity.UserInfo" id="userInfo">
+		<result column="id" property="id" />
+		<result column="taobao_user_id" property="taobaoUserId" />
+		<result column="sub_taobao_user_id" property="subtaobaoUserId" />
+		<result column="Create_Time" property="createTime" />
+		<result column="last_login_date" property="lastLoginDate" />
+		<result column="status" property="status" />
+		<result column="expiration_time" property="expirationTime" />
+		<result column="mobile" property="mobile" />
+		<result column="appkey" property="appkey" />
+		<result column="taobao_user_nick" property="taobaoUserNick" />
+		<result column="sub_taobao_user_nick" property="subtaobaoUserNick" />
+		<result column="modify_time" property="modifyTime" />
+		<result column="sms_num" property="smsNum" />
+		<result column="email_num" property="emailNum" />
+		<result column="access_token" property="access_token" />
+		<result column="qq_num" property="qqNum" /> 
+		<result column="level" property="level" />
+		<result column="has_provide" property="hasProvide" />  
+	</resultMap>
+	
+	<select id="findUserInfoList" resultMap="userInfo">
+		SELECT u.`id` , u.`taobao_user_nick` , u.`last_login_date` ,
+			   u.`mobile` ,u.`expiration_time` , u.`qq_num` ,u.`level` , 
+			   u.`has_provide` ,c.`sms_num` 
+		FROM `crm_user` u ,`crm_user_account` c 
+		WHERE u.`taobao_user_nick` = c.`user_id` 
+		AND u.`last_login_date` >= NOW()-INTERVAL 1 MINUTE
+	</select>
+	
+	<!-- 通过用户的昵称查询出用户剩余的短信余额 -->
+	<select id="getSmsNumByUserId" resultType="java.lang.Integer">
+		SELECT
+		IFNULL(sms_num,0)
+		FROM crm_user_account 
+		WHERE
+		user_id = #{taobaoUserNick}
+	</select>
+	
+	<!-- 查询用户是否存在 -->
+	<select id="getUserByUserId" resultMap="userInfo">
+		SELECT USER_ID as TAOBAO_USER_NICK,sms_num
+		FROM crm_user_account
+		WHERE USER_ID = #{taobaoUserNick}
+	</select>
+	<!-- 当充值成功后修改用户短信剩余条数 -->
+	<update id="updateUserInfoRecharge">
+		UPDATE crm_user_account
+		SET sms_num = IFNULL(sms_num,0)+#{smsNum},lastModifiedDate=now()
+		WHERE user_id = #{taobaoUserNick}
+	</update>
+	
+	<!-- 扣除指定用户的短信条数 -->
+	<update id="updateUserInfoDeduct">
+		UPDATE crm_user_account
+		SET sms_num = IFNULL(sms_num,0)-#{smsNum},lastModifiedDate=now()
+		WHERE user_id = #{taobaoUserNick} and sms_num >=#{smsNum}
+	</update>
+		
+	<select id="findUserInfoSmsNumList"  parameterType="java.util.List" resultMap="userInfo">
+		SELECT user_id as  taobao_user_nick,sms_num 
+		FROM crm_user_account 
+		WHERE user_id IN
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>	
+	
+	<select id="findUserAccountList"    resultMap="userInfo">
+		SELECT user_id as taobao_user_nick,sms_num 
+		FROM crm_user_account where 1=1   order  by  id desc 
+	</select>	
+	
+	<select id="findUserInfoSmsNum"   parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT sms_num 
+		FROM crm_user_account where user_id = #{userId} 
+	</select>	
+	
+	
+	
+	<select id="findUserInfoByCustomer"   parameterType="java.lang.String" resultMap="userInfo">
+		SELECT u.qq_num,u.mobile,u.expiration_time,u.last_login_date,c.sms_num,u.level
+		FROM crm_user u,crm_user_account c WHERE u.id=c.uid and  u.taobao_user_nick = #{userId}
+	</select>
+</mapper>

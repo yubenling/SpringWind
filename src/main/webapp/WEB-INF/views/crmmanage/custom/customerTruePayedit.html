@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSPINIA | Basic Form</title>
+	<link href="#springUrl('/static/css/bootstrap.min.css')" rel="stylesheet">
+	<link href="#springUrl('/static/css/style.css')" rel="stylesheet">
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 430px;">
+   <form id="myForm" class="form-horizontal" autocomplete="off" data-validator-option="{theme:'default'}">
+             <div class="form-group"><label class="col-sm-2 control-label">充值短信条数</label>
+		            <div class="col-sm-10">
+		           		<input type="text" class="form-control"   name="smsNum" data-rule="数量:required;smsNum" value="0"/>
+		           		 <input type="hidden"    value="充值" name="payType" ></input>
+		           </div>
+		       </div>
+		       <div class="hr-line-dashed"></div>
+		       <div class="form-group"><label class="col-sm-2 control-label">当前剩余短信条数</label>
+		            <div class="col-sm-10">
+		           		<!--  <input type="text" class="form-control" placeholder="当前剩余短信条数" name="restSmsNum" id="restSmsNum" data-rule="用户:required;restSmsNum" value="$!{restSmsNum}"></input> -->
+		           		<input type="text" class="form-control" placeholder="当前剩余短信条数" name="restSmsNum" id="restSmsNum" disabled="true" value="$!{restSmsNum}"></input>
+		           </div>
+		       </div>
+		       <div class="hr-line-dashed"></div>
+		       <div class="form-group"><label class="col-sm-2 control-label">充值用户</label>
+		           <div class="col-sm-10">
+		           		  <input type="text" class="form-control" placeholder="充值用户" name="customerName" id="customerName" disabled="true" data-rule="用户:required;customerName" value="$!{customerName}"></input>
+		           </div>
+		       </div>
+	       <input type="hidden"    value="$!{type}" name="buyType" ></input>
+	       <input type="hidden"    value="$!{cid}" name="customerId" ></input>
+	       <input type="hidden"    value="$!{customerName}" id="customerName" name="customerName" ></input>
+	       <input type="hidden"    value="$!{restSmsNum}" id="restSmsNum" name="restSmsNum" ></input>
+	        <input type="hidden"    value="$!{userRechargeStatus}" id="userRechargeStatus" name="userRechargeStatus" ></input>
+        <div class="hr-line-dashed"></div>
+        <div class="form-group">
+            <div class="text-center">
+                <button class="btn btn-primary"   type="submit">提 交</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="#springUrl('/static/js/jquery-2.1.1.js')"></script>
+<script src="#springUrl('/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN')"></script>
+<script src="#springUrl('/static/js/plugins/datepicker/bootstrap-datepicker.js')"></script>
+<script type="text/javascript">
+
+$("#payTime").datepicker({
+    format: 'yyyy-mm-dd',
+    language: 'en',
+    pickDate: true,
+    pickTime: true,
+    language: 'cn',
+    hourStep: 1,
+    minuteStep: 15,
+    secondStep: 30,
+    inputMask: true
+  });
+  
+$("#myForm").validator({
+    valid: function(form){
+        var me = this;
+        // 提交表单之前，hold住表单，防止重复提交
+        me.holdSubmit();
+        $.ajax({
+         url: "#springUrl('/sys/manager/updateTrueCustomerStatus/')",
+            data: $(form).serialize(),
+            type: "POST",
+            success: function(data){
+            	var d = JSON.parse(data);
+            	var data = d.data;
+                if(d.flag){
+                	alert(data);
+                	/* userRechargeStatus: $("#userRechargeStatus").val(), */
+                	window.parent.location.reload();
+                	//当你在iframe页面关闭自身时
+                	//var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                	//parent.layer.close(index); //再执行关闭   
+                } else {
+                	//失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                	alert("更新用户失败！");
+                    me.holdSubmit(false);
+                }
+            }
+        });
+    }
+});
+
+
+</script>
+</body>
+</html>

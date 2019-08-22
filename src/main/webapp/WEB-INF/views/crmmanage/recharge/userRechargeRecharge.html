@@ -1,0 +1,92 @@
+#override("title")
+SpringWind - 客户管理
+#end
+#override("css")
+<link href="#springUrl('/static/css/plugins/bootstrap-table/bootstrap-table.min.css')" rel="stylesheet">
+#end
+#override("breadcrumb")
+<li><a>客户列表</a></li><li class="active"><strong>客户管理</strong></li>
+#end
+#override("content")
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<span class="input-group-btn">
+			     <input type="text" class="form-control" placeholder="请输入客户昵称" id="userId" value="">      
+				<button type="button" class="btn btn-info" onclick="doSearch()">搜索</button>
+			</span>
+		</div>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+
+#end
+#override("js")
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js')"></script>
+<script src="#springUrl('/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js')"></script>
+<script src="#springUrl('/static/plugins/layer-v2.2/layer/layer.js')"></script>
+<script src="#springUrl('/static/js/base_list.js')"></script>
+<script src="#springUrl('/static/js/common.js')"></script>
+<script type="text/javascript">
+var dataUrl = "#springUrl('/sys/manager/queryUserRechargeRecharge.html')";
+		var dataColumns = [{
+            field: 'Number',
+            title: '序号',
+            formatter: function (value, row, index) {
+                return index+1;
+            }
+         },{
+		    field: 'userNick',
+		    title: '客户昵称'
+		}, {
+		    field: 'rechargePrice',
+		    title: '充值金额'
+		}, {
+		    field: 'rechargeNUm',
+		    title: '充值数量'
+		}, {
+		    field: 'status',
+		    title: '充值状态',
+		    formatter: function (value, row, index) {
+		    	var data;
+		    	if(row.status == '1'){
+		    		data = "成功";
+		    	}
+		    	if(row.status == '2'){
+		    		data = "失败";
+		    	}
+		    	if(row.status == '3'){
+		    		data = "待付款";
+		    	}
+		        return data;
+		    }
+		},{
+		    field: 'rechargeTime',
+		    title: '充值时间',
+		    formatter: function (value, row, index) {
+		        return formatDate(row.rechargeTime);
+		    }
+		}
+	];
+		
+    function dataQueryParams(params) {
+    	return {
+    			_size: params.limit,
+    			_index: params.offset,
+    			userNick:$("#userId").val()
+    	};
+    }
+    function doSearch(params){
+      $('#dataTable').bootstrapTable('refresh',{
+    	  url:dataUrl,
+    	  queryParams:dataQueryParams
+      });
+    }
+</script>
+#end
+#extends("/common/framework.html")

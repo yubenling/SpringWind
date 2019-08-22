@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.MsgSendRecordMapper">
+	<resultMap type="com.baomidou.springwind.entity.MsgSendRecord" id="msgSendRecord">
+		<result column="user_Id" property="userId" />
+		<result column="template_content" property="templateContent" />
+		<result column="send_creat" property="sendCreat" />
+		<result column="type" property="type" />
+	</resultMap>
+	
+	
+	<select id="findMsgSendRecordPage" resultMap="msgSendRecord">
+		SELECT user_Id,template_content,send_creat,type FROM
+		CRM_MSGRECORD
+		<where>
+			<if test="userId !=null and userId !='' ">
+				AND user_Id LIKE CONCAT('%', #{userId}, '%')
+			</if>
+			<if test="templateContent !=null and templateContent !='' ">
+				AND template_content LIKE CONCAT('%', #{templateContent}, '%')
+			</if>
+		</where>
+		ORDER BY id DESC
+		LIMIT #{currentPage},#{pageSize}
+	</select>
+	
+	<select id="findMsgSendRecordPageCount" resultType="java.lang.Integer">
+		SELECT count(1) FROM
+		CRM_MSGRECORD
+		<where>
+			<if test="userId !=null and userId !='' ">
+				AND user_Id LIKE CONCAT('%', #{userId}, '%')
+			</if>
+			<if test="templateContent !=null and templateContent !='' ">
+				AND template_content LIKE CONCAT('%', #{templateContent}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="findOrderSendRecordPage" resultMap="msgSendRecord">
+		SELECT user_Id,content template_content,send_time send_creat,type FROM
+		crm_sms_send_info
+		<where>
+			<if test="userId !=null and userId !='' ">
+				AND user_Id LIKE CONCAT('%', #{userId}, '%')
+			</if>
+			<if test="templateContent !=null and templateContent !='' ">
+				AND content LIKE CONCAT('%', #{templateContent}, '%')
+			</if>
+		</where>
+		ORDER BY id DESC
+		LIMIT #{currentPage},#{pageSize}
+	</select>
+	
+	<select id="findOrderSendRecordPageCount" resultType="java.lang.Integer">
+		SELECT count(1) FROM
+		crm_sms_send_info
+		<where>
+			<if test="userId !=null and userId !='' ">
+				AND user_Id LIKE CONCAT('%', #{userId}, '%')
+			</if>
+			<if test="templateContent !=null and templateContent !='' ">
+				AND content LIKE CONCAT('%', #{templateContent}, '%')
+			</if>
+		</where>
+	</select>
+</mapper>

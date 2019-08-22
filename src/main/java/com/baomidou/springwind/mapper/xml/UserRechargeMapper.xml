@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.UserRechargeMapper">
+
+	<resultMap type="com.baomidou.springwind.entity.UserRecharge"
+		id="userRecharge">
+		<result column="rechargeDate" property="rechargeDate" />
+		<result column="rechargePrice" property="rechargePrice" />
+		<result column="rechargeNUm" property="rechargeNUm" />
+		<result column="userNick" property="userNick" />
+		<result column="rechargeTime" property="rechargeTime" />
+		<result column="STATUS" property="status" />
+	</resultMap>
+
+	<select id="findMonthlyUserRecharge" resultMap="userRecharge">
+		SELECT concat(YEAR(recharge_date),'-',MONTH(recharge_date)) rechargeDate,
+		ifnull( SUM(recharge_price),0) rechargePrice,
+		ifnull( SUM(recharge_num),0) rechargeNUm,
+		user_nick userNick
+		FROM crm_user_recharge_record
+		<where>
+			user_nick IS NOT NULL AND STATUS = '1'
+ 			<if test="userNick != null and userNick != ''">
+				AND user_nick = #{userNick}
+			</if>
+		</where>
+		GROUP BY YEAR(recharge_date),MONTH(recharge_date),user_nick
+		ORDER BY id desc
+		LIMIT #{currentPage},#{pageSize}
+	</select>
+
+
+	<select id="findMonthlyUserRechargeCount" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM (SELECT COUNT(1)
+		FROM crm_user_recharge_record
+		<where>
+			user_nick IS NOT NULL AND STATUS = '1'
+			<if test="userNick != null and userNick != ''">
+				AND user_nick = #{userNick}
+			</if>
+		</where>
+		GROUP BY YEAR(recharge_date),MONTH(recharge_date),user_nick)r
+	</select>
+	
+	<select id="findUserRechargeName" resultType="java.lang.String">
+		SELECT user_nick userNick FROM crm_user_recharge_record 
+		WHERE status = '1' 
+		AND PERIOD_DIFF(date_format(now(), '%Y%m') , date_format( recharge_date, '%Y%m' )) =1
+		GROUP BY userNick
+	</select>
+	
+	
+	<select id="findUserRechargeList" resultMap="userRecharge">
+		SELECT user_nick userNick, recharge_price rechargePrice,recharge_date rechargeTime,recharge_num rechargeNUm,STATUS
+		FROM `crm_user_recharge_record` 
+		<where>
+			<if test="userNick !=null and userNick != ''">
+			 AND user_nick = #{userNick}
+			</if>
+		</where>  
+		ORDER BY rechargeTime DESC
+		LIMIT #{currentPage},#{pageSize}
+	</select>
+	
+	
+	<select id="findUserRechargeListCount" resultType="java.lang.Integer">
+		SELECT COUNT(1)
+		FROM crm_user_recharge_record
+		<where>
+			<if test="userNick !=null and userNick != ''">
+			 AND user_nick = #{userNick}
+			</if>
+		</where>  
+	</select>
+	
+	<!-- 国庆定时执行sql -->
+	<delete id="executeDeleteSql">
+		DELETE
+		FROM crm_sms_send_schedule
+		WHERE id IN(SELECT
+		t.id
+		FROM (SELECT
+		id
+		FROM crm_sms_send_schedule
+		WHERE startSend &lt; DATE_SUB(NOW(),INTERVAL 5 MINUTE)) t)
+	</delete>
+	
+	
+	
+</mapper>

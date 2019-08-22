@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baomidou.springwind.mapper.UserMonthSurplusSmsMapper">
+<!-- 通用查询结果列-->
+	<sql id="Base_Column_List">
+		 id,userNick,surplusNum,createDate,
+	</sql>
+	
+	
+	<select id="findMonthStartNum" resultType="java.lang.Integer">
+		SELECT IFNULL(surplusNum,0)
+		FROM crm_user_month_surplus_sms
+		<where>
+		 	<if test="userNick != null and userNick !=''">
+		 		AND userNick = #{userNick}
+		 	</if>
+		 	<if test="rechargeDate != null and rechargeDate !=''">
+				AND CONCAT(YEAR(createTime),'-',MONTH(createTime)) = #{rechargeDate}
+		 	</if>
+		</where>
+	</select>
+</mapper>
